@@ -298,9 +298,11 @@ func (t *testLogWriter) Write(p []byte) (n int, err error) {
 }
 
 func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, t *testing.T, cluster *v1beta1.TemporalCluster) (string, func(), error) {
-	// Determine which service to port-forward to: internal-frontend or frontend
+	// Always use the public frontend pod if mTLS frontend is enabled
 	component := string(primitives.FrontendService)
-	if cluster.Spec.Services != nil && cluster.Spec.Services.InternalFrontend != nil && cluster.Spec.Services.InternalFrontend.Enabled {
+	if cluster.Spec.MTLS != nil && cluster.Spec.MTLS.Frontend != nil && cluster.Spec.MTLS.Frontend.Enabled {
+		component = string(primitives.FrontendService)
+	} else if cluster.Spec.Services != nil && cluster.Spec.Services.InternalFrontend != nil && cluster.Spec.Services.InternalFrontend.Enabled {
 		component = string(primitives.InternalFrontendService)
 	}
 
