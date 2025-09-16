@@ -298,6 +298,12 @@ func (t *testLogWriter) Write(p []byte) (n int, err error) {
 }
 
 func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, t *testing.T, cluster *v1beta1.TemporalCluster) (string, func(), error) {
+	// Determine which service to port-forward to: internal-frontend or frontend
+	component := string(primitives.FrontendService)
+	if cluster.Spec.Services != nil && cluster.Spec.Services.InternalFrontend != nil && cluster.Spec.Services.InternalFrontend.Enabled {
+		component = string(primitives.InternalFrontendService)
+	}
+
 	selector, err := metav1.LabelSelectorAsSelector(
 		&metav1.LabelSelector{
 			MatchExpressions: []metav1.LabelSelectorRequirement{
@@ -309,7 +315,7 @@ func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, t *
 				{
 					Key:      "app.kubernetes.io/component",
 					Operator: metav1.LabelSelectorOpIn,
-					Values:   []string{string(primitives.FrontendService)},
+					Values:   []string{component},
 				},
 				{
 					Key:      "app.kubernetes.io/version",
