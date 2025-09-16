@@ -724,6 +724,11 @@ spec:
                           FrontendCertificate is the 'duration' (i.e. lifetime) of the frontend certificate.
                           It defaults to 1 year.
                         type: string
+                      internalFrontendCertificate:
+                        description: |-
+                          InternalFrontendCertificate is the 'duration' (i.e. lifetime) of the internal frontend certificate.
+                          It defaults to 1 year.
+                        type: string
                       intermediateCAsCertificates:
                         description: |-
                           IntermediateCACertificates is the 'duration' (i.e. lifetime) of the intermediate CAs Certificates.

@@ -654,7 +654,7 @@ type InternalFrontendMTLSSpec struct {
 
 // ServerName returns frontend servername for mTLS certificates.
 func (InternalFrontendMTLSSpec) ServerName(cluster *TemporalCluster) string {
-	return fmt.Sprintf("%s.%s", cluster.ChildResourceName("frontend"), cluster.FQDNSuffix())
+	return fmt.Sprintf("%s.%s", cluster.ChildResourceName("internal-frontend-headless"), cluster.FQDNSuffix())
 }
 
 // GetIntermediateCACertificateMountPath returns the mount path for intermediate CA certificates.
@@ -664,7 +664,7 @@ func (InternalFrontendMTLSSpec) GetIntermediateCACertificateMountPath() string {
 
 // GetCertificateMountPath returns the mount path for the frontend certificate.
 func (InternalFrontendMTLSSpec) GetCertificateMountPath() string {
-	return "/etc/temporal/config/certs/cluster/frontend"
+	return "/etc/temporal/config/certs/cluster/internal-frontend"
 }
 
 // GetWorkerCertificateMountPath returns the mount path for the worker certificate.
