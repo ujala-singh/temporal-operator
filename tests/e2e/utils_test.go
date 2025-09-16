@@ -302,12 +302,8 @@ func forwardPortToTemporalFrontend(ctx context.Context, cfg *envconf.Config, t *
 	component := string(primitives.FrontendService)
 	if cluster.Spec.MTLS != nil && cluster.Spec.MTLS.Frontend != nil && cluster.Spec.MTLS.Frontend.Enabled {
 		component = string(primitives.FrontendService)
-		t.Logf("[DEBUG] Port-forwarding to public frontend pod (component=%s) because mTLS frontend is enabled", component)
 	} else if cluster.Spec.Services != nil && cluster.Spec.Services.InternalFrontend != nil && cluster.Spec.Services.InternalFrontend.Enabled {
 		component = string(primitives.InternalFrontendService)
-		t.Logf("[DEBUG] Port-forwarding to internal-frontend pod (component=%s) because internal frontend is enabled and mTLS frontend is not enabled", component)
-	} else {
-		t.Logf("[DEBUG] Port-forwarding to public frontend pod (component=%s) by default", component)
 	}
 
 	selector, err := metav1.LabelSelectorAsSelector(
