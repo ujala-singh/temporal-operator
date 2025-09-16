@@ -104,7 +104,7 @@ func TestWithmTLSEnabled(t *testing.T) {
 							Internode: &v1beta1.InternodeMTLSSpec{
 								Enabled: true,
 							},
-							Frontend: &v1beta1.FrontendMTLSSpec{
+							InternalFrontend: &v1beta1.InternalFrontendMTLSSpec{
 								Enabled: true,
 							},
 						},

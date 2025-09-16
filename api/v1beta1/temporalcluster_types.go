@@ -640,6 +640,38 @@ func (FrontendMTLSSpec) GetWorkerCertificateMountPath() string {
 	return "/etc/temporal/config/certs/cluster/worker"
 }
 
+// InternalFrontendMTLSSpec defines parameters for the temporal encryption in transit with mTLS.
+type InternalFrontendMTLSSpec struct {
+	// Enabled defines if the operator should enable mTLS for cluster's public endpoints.
+	// +optional
+	Enabled bool `json:"enabled"`
+	// ExtraDNSNames is a list of additional DNS names associated with the TemporalCluster.
+	// These DNS names can be used for accessing the TemporalCluster from external services.
+	// The DNS names specified here will be added to the TLS certificate for secure communication.
+	// +nullable
+	ExtraDNSNames []string `json:"extraDnsNames,omitempty"`
+}
+
+// ServerName returns frontend servername for mTLS certificates.
+func (InternalFrontendMTLSSpec) ServerName(cluster *TemporalCluster) string {
+	return fmt.Sprintf("%s.%s", cluster.ChildResourceName("frontend"), cluster.FQDNSuffix())
+}
+
+// GetIntermediateCACertificateMountPath returns the mount path for intermediate CA certificates.
+func (InternalFrontendMTLSSpec) GetIntermediateCACertificateMountPath() string {
+	return "/etc/temporal/config/certs/client/ca"
+}
+
+// GetCertificateMountPath returns the mount path for the frontend certificate.
+func (InternalFrontendMTLSSpec) GetCertificateMountPath() string {
+	return "/etc/temporal/config/certs/cluster/frontend"
+}
+
+// GetWorkerCertificateMountPath returns the mount path for the worker certificate.
+func (InternalFrontendMTLSSpec) GetWorkerCertificateMountPath() string {
+	return "/etc/temporal/config/certs/cluster/worker"
+}
+
 // InternodeMTLSSpec defines parameters for the temporal encryption in transit with mTLS.
 type InternodeMTLSSpec struct {
 	// Enabled defines if the operator should enable mTLS for network between cluster nodes.
@@ -701,6 +733,10 @@ type MTLSSpec struct {
 	// Useless if mTLS provider is not cert-manager.
 	// +optional
 	Frontend *FrontendMTLSSpec `json:"frontend,omitempty"`
+	// InternalFrontend allows configuration of the internal-frontend service mTLS.
+	// Useless if mTLS provider is not cert-manager.
+	// +optional
+	InternalFrontend *InternalFrontendMTLSSpec `json:"internalFrontend,omitempty"`
 	// CertificatesDuration allows configuration of maximum certificates lifetime.
 	// Useless if mTLS provider is not cert-manager.
 	// +optional
@@ -729,6 +765,10 @@ func (m *MTLSSpec) InternodeEnabled() bool {
 
 func (m *MTLSSpec) FrontendEnabled() bool {
 	return m.Frontend != nil && m.Frontend.Enabled
+}
+
+func (m *MTLSSpec) InternalFrontendEnabled() bool {
+	return m.InternalFrontend != nil && m.InternalFrontend.Enabled
 }
 
 // PrometheusScrapeConfigServiceMonitor is the configuration for prometheus operator ServiceMonitor.
@@ -1172,7 +1212,7 @@ func (c *TemporalCluster) FQDNSuffix() string {
 // MTLSEnabled returns true if mTLS is enabled for internode or frontend using cert-manager.
 func (c *TemporalCluster) MTLSWithCertManagerEnabled() bool {
 	return c.Spec.MTLS != nil &&
-		(c.Spec.MTLS.InternodeEnabled() || c.Spec.MTLS.FrontendEnabled()) &&
+		(c.Spec.MTLS.InternodeEnabled() || c.Spec.MTLS.FrontendEnabled() || c.Spec.MTLS.InternalFrontendEnabled()) &&
 		c.Spec.MTLS.Provider == CertManagerMTLSProvider
 }
 
@@ -1182,10 +1222,6 @@ func (c *TemporalCluster) ChildResourceName(resource string) string {
 }
 
 func (c *TemporalCluster) GetPublicClientAddress() string {
-	// If mTLS frontend is enabled, always use the public frontend address
-	if c.Spec.MTLS != nil && c.Spec.MTLS.Frontend != nil && c.Spec.MTLS.Frontend.Enabled {
-		return fmt.Sprintf("%s.%s:%d", c.ChildResourceName("frontend"), c.GetNamespace(), *c.Spec.Services.Frontend.Port)
-	}
 	// Use internal frontend if it's enabled, otherwise use regular frontend
 	if c.Spec.Services != nil && c.Spec.Services.InternalFrontend.IsEnabled() {
 		return fmt.Sprintf("%s.%s:%d", c.ChildResourceName("internal-frontend-headless"), c.GetNamespace(), *c.Spec.Services.InternalFrontend.Port)
