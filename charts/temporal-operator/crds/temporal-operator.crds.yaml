@@ -724,11 +724,6 @@ spec:
                           FrontendCertificate is the 'duration' (i.e. lifetime) of the frontend certificate.
                           It defaults to 1 year.
                         type: string
-                      internalFrontendCertificate:
-                        description: |-
-                          InternalFrontendCertificate is the 'duration' (i.e. lifetime) of the internal frontend certificate.
-                          It defaults to 1 year.
-                        type: string
                       intermediateCAsCertificates:
                         description: |-
                           IntermediateCACertificates is the 'duration' (i.e. lifetime) of the intermediate CAs Certificates.
@@ -744,25 +739,6 @@ spec:
                           RootCACertificate is the 'duration' (i.e. lifetime) of the Root CA Certificate.
                           It defaults to 10 years.
                         type: string
-                    type: object
-                  internalFrontend:
-                    description: |-
-                      InternalFrontend allows configuration of the internal frontend's traffic encryption.
-                      Useless if mTLS provider is not cert-manager.
-                    properties:
-                      enabled:
-                        description: Enabled defines if the operator should enable
-                          mTLS for cluster's internal frontend endpoints.
-                        type: boolean
-                      extraDnsNames:
-                        description: |-
-                          ExtraDNSNames is a list of additional DNS names associated with the TemporalCluster.
-                          These DNS names can be used for accessing the TemporalCluster from external services.
-                          The DNS names specified here will be added to the TLS certificate for secure communication.
-                        items:
-                          type: string
-                        nullable: true
-                        type: array
                     type: object
                   frontend:
                     description: |-
